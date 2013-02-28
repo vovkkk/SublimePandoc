@@ -29,21 +29,24 @@ class PandocRenderCommand(sublime_plugin.TextCommand):
         if not target in ["html","docx"]: raise Exception("target must be either 'html' or 'docx'")
 
         # determin pandoc binary
-        pandoc_path = settings.get('pandoc_path')
-        if pandoc_path is not None:
-            pandoc_bin = os.path.join(os.path.expanduser(pandoc_path), 'pandoc')
+        if os.name is 'nt':
+            pandoc_bin = 'pandoc'
         else:
-            pandoc_bin = settings.get('pandoc_bin') or 'pandoc' # set to default in $PATH
-            pandoc_bin = os.path.expanduser(pandoc_bin)
-        if not os.path.exists(pandoc_bin):
-            found = False
-            if pandoc_bin == 'pandoc':
-                bools = [os.path.exists(os.path.join(p, pandoc_bin)) for p in os.environ['PATH'].split(':')]
-                if bools.count(True):
-                    found = True
-            if not found:
-                sublime.error_message("Unable to load pandoc engine: {0}\n\nYou can specify Pandoc in settings.".format(pandoc_bin))
-                return
+            pandoc_path = settings.get('pandoc_path')
+            if pandoc_path is not None:
+                pandoc_bin = os.path.join(os.path.expanduser(pandoc_path), 'pandoc')
+            else:
+                pandoc_bin = settings.get('pandoc_bin') or 'pandoc' # set to default in $PATH
+                pandoc_bin = os.path.expanduser(pandoc_bin)
+            if not os.path.exists(pandoc_bin):
+                found = False
+                if pandoc_bin == 'pandoc':
+                    bools = [os.path.exists(os.path.join(p, pandoc_bin)) for p in os.environ['PATH'].split(':')]
+                    if bools.count(True):
+                        found = True
+                if not found:
+                    sublime.error_message("Unable to load pandoc engine: {0}\n\nYou can specify Pandoc in settings.".format(pandoc_bin))
+                    return
 
         # grab contents of buffer
         region = sublime.Region(0, self.view.size())
